@@ -1,0 +1,181 @@
+-- TOEIC頻出単語データ投入スクリプト
+-- 出典: TOEIC対策公式コンテンツおよび頻出単語リスト
+-- https://www.rarejob.com/englishlab/column/20210922_04/
+-- https://toiguru.jp/toeic-vocabulary-list
+
+-- ========================================
+-- 難易度1: TOEIC 600点レベル（基礎）
+-- ========================================
+
+INSERT INTO vocabularies (word, type, difficulty, meaning, part_of_speech, frequency, tags, created_at, updated_at)
+VALUES
+  -- ビジネス基礎語彙
+  ('accommodate', 'WORD', 1, '収容する、適応させる', '動詞', 85, 'ビジネス,サービス', datetime('now'), datetime('now')),
+  ('accounting', 'WORD', 1, '会計、経理', '名詞', 82, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('advance', 'WORD', 1, '前進する、進歩', '動詞/名詞', 88, 'ビジネス,成長', datetime('now'), datetime('now')),
+  ('afford', 'WORD', 1, '余裕がある', '動詞', 75, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('analyst', 'WORD', 1, 'アナリスト、分析者', '名詞', 78, 'ビジネス,職業', datetime('now'), datetime('now')),
+  ('annual', 'WORD', 1, '年次の、毎年の', '形容詞', 90, 'ビジネス,時間', datetime('now'), datetime('now')),
+  ('appreciate', 'WORD', 1, '感謝する、評価する', '動詞', 83, 'ビジネス,コミュニケーション', datetime('now'), datetime('now')),
+  ('architect', 'WORD', 1, '建築家', '名詞', 70, 'ビジネス,職業', datetime('now'), datetime('now')),
+  ('assess', 'WORD', 1, '評価する', '動詞', 87, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('attend', 'WORD', 1, '出席する', '動詞', 92, 'ビジネス,会議', datetime('now'), datetime('now')),
+
+  -- 会議・コミュニケーション
+  ('conference', 'WORD', 1, '会議、協議会', '名詞', 95, 'ビジネス,会議', datetime('now'), datetime('now')),
+  ('contact', 'WORD', 1, '連絡を取る', '動詞', 94, 'ビジネス,コミュニケーション', datetime('now'), datetime('now')),
+  ('interview', 'WORD', 1, '面接、インタビュー', '名詞', 89, 'ビジネス,人事', datetime('now'), datetime('now')),
+  ('colleague', 'WORD', 1, '同僚', '名詞', 86, 'ビジネス,職場', datetime('now'), datetime('now')),
+
+  -- 契約・取引
+  ('contract', 'WORD', 1, '契約', '名詞', 93, 'ビジネス,契約', datetime('now'), datetime('now')),
+  ('purchase', 'WORD', 1, '購入する', '動詞', 91, 'ビジネス,取引', datetime('now'), datetime('now')),
+  ('invoice', 'WORD', 1, '請求書', '名詞', 84, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('approve', 'WORD', 1, '承認する', '動詞', 88, 'ビジネス,承認', datetime('now'), datetime('now')),
+
+  -- 管理・運営
+  ('budget', 'WORD', 1, '予算', '名詞', 92, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('deadline', 'WORD', 1, '締め切り', '名詞', 90, 'ビジネス,時間', datetime('now'), datetime('now')),
+  ('department', 'WORD', 1, '部署', '名詞', 89, 'ビジネス,組織', datetime('now'), datetime('now')),
+  ('develop', 'WORD', 1, '開発する', '動詞', 87, 'ビジネス,開発', datetime('now'), datetime('now')),
+  ('eliminate', 'WORD', 1, '取り除く', '動詞', 79, 'ビジネス,改善', datetime('now'), datetime('now')),
+  ('employee', 'WORD', 1, '従業員', '名詞', 94, 'ビジネス,人事', datetime('now'), datetime('now')),
+  ('executive', 'WORD', 1, '幹部、役員', '名詞', 85, 'ビジネス,職位', datetime('now'), datetime('now')),
+  ('facility', 'WORD', 1, '施設', '名詞', 88, 'ビジネス,設備', datetime('now'), datetime('now')),
+  ('management', 'WORD', 1, '経営、管理', '名詞', 93, 'ビジネス,経営', datetime('now'), datetime('now')),
+
+  -- サービス・顧客
+  ('deliver', 'WORD', 1, '配達する', '動詞', 86, 'ビジネス,物流', datetime('now'), datetime('now')),
+  ('feature', 'WORD', 1, '特徴', '名詞', 82, 'ビジネス,製品', datetime('now'), datetime('now')),
+  ('frequent', 'WORD', 1, '頻繁な', '形容詞', 80, 'ビジネス,頻度', datetime('now'), datetime('now')),
+  ('handle', 'WORD', 1, '扱う、処理する', '動詞', 84, 'ビジネス,対応', datetime('now'), datetime('now')),
+  ('improve', 'WORD', 1, '改善する', '動詞', 89, 'ビジネス,改善', datetime('now'), datetime('now')),
+  ('inquire', 'WORD', 1, '問い合わせる', '動詞', 81, 'ビジネス,コミュニケーション', datetime('now'), datetime('now')),
+  ('notice', 'WORD', 1, '気づく、通知', '動詞/名詞', 83, 'ビジネス,通知', datetime('now'), datetime('now')),
+  ('passenger', 'WORD', 1, '乗客', '名詞', 76, 'ビジネス,旅行', datetime('now'), datetime('now')),
+  ('provide', 'WORD', 1, '提供する', '動詞', 91, 'ビジネス,サービス', datetime('now'), datetime('now')),
+  ('recommend', 'WORD', 1, '推薦する', '動詞', 85, 'ビジネス,提案', datetime('now'), datetime('now')),
+  ('representative', 'WORD', 1, '代表者', '名詞', 87, 'ビジネス,職位', datetime('now'), datetime('now')),
+
+  -- その他重要語彙
+  ('current', 'WORD', 1, '現在の', '形容詞', 88, 'ビジネス,時間', datetime('now'), datetime('now')),
+  ('expertise', 'WORD', 1, '専門知識', '名詞', 80, 'ビジネス,能力', datetime('now'), datetime('now')),
+  ('include', 'WORD', 1, '含む', '動詞', 90, 'ビジネス,一般', datetime('now'), datetime('now')),
+  ('invest', 'WORD', 1, '投資する', '動詞', 86, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('involve', 'WORD', 1, '関与する', '動詞', 84, 'ビジネス,参加', datetime('now'), datetime('now')),
+  ('manufacture', 'WORD', 1, '製造する', '動詞', 82, 'ビジネス,製造', datetime('now'), datetime('now')),
+  ('participate', 'WORD', 1, '参加する', '動詞', 87, 'ビジネス,参加', datetime('now'), datetime('now')),
+  ('proposal', 'WORD', 1, '提案', '名詞', 89, 'ビジネス,提案', datetime('now'), datetime('now')),
+  ('refund', 'WORD', 1, '払い戻す', '動詞', 78, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('remove', 'WORD', 1, '取り除く', '動詞', 81, 'ビジネス,作業', datetime('now'), datetime('now')),
+  ('responsible', 'WORD', 1, '責任がある', '形容詞', 88, 'ビジネス,責任', datetime('now'), datetime('now')),
+  ('result', 'WORD', 1, '結果', '名詞', 90, 'ビジネス,結果', datetime('now'), datetime('now')),
+  ('review', 'WORD', 1, '見直す、評価', '動詞', 86, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('shortage', 'WORD', 1, '不足', '名詞', 77, 'ビジネス,問題', datetime('now'), datetime('now')),
+  ('survey', 'WORD', 1, '調査', '名詞', 85, 'ビジネス,調査', datetime('now'), datetime('now')),
+  ('transfer', 'WORD', 1, '移動する、転送', '動詞', 83, 'ビジネス,移動', datetime('now'), datetime('now'));
+
+-- ========================================
+-- 難易度2: TOEIC 800点レベル（上級）
+-- ========================================
+
+INSERT INTO vocabularies (word, type, difficulty, meaning, part_of_speech, frequency, tags, created_at, updated_at)
+VALUES
+  -- ビジネス上級語彙
+  ('abridged', 'WORD', 2, '要約された', '形容詞', 65, 'ビジネス,文書', datetime('now'), datetime('now')),
+  ('accomplished', 'WORD', 2, '熟練した、達成された', '形容詞', 72, 'ビジネス,能力', datetime('now'), datetime('now')),
+  ('acknowledgement', 'WORD', 2, '承認、受領', '名詞', 74, 'ビジネス,確認', datetime('now'), datetime('now')),
+  ('affiliate', 'WORD', 2, '系列会社', '名詞', 68, 'ビジネス,組織', datetime('now'), datetime('now')),
+  ('agenda', 'WORD', 2, '議題、協議事項', '名詞', 80, 'ビジネス,会議', datetime('now'), datetime('now')),
+  ('alert', 'WORD', 2, '警戒した', '形容詞', 70, 'ビジネス,注意', datetime('now'), datetime('now')),
+
+  -- 財務・会計
+  ('boost', 'WORD', 2, '増加させる', '動詞', 75, 'ビジネス,成長', datetime('now'), datetime('now')),
+  ('bulk', 'WORD', 2, '大量', '名詞', 71, 'ビジネス,数量', datetime('now'), datetime('now')),
+  ('certified', 'WORD', 2, '認定された', '形容詞', 76, 'ビジネス,資格', datetime('now'), datetime('now')),
+  ('circulation', 'WORD', 2, '流通、発行部数', '名詞', 69, 'ビジネス,配布', datetime('now'), datetime('now')),
+  ('commerce', 'WORD', 2, '商業、貿易', '名詞', 78, 'ビジネス,貿易', datetime('now'), datetime('now')),
+  ('compliance', 'WORD', 2, '法令遵守', '名詞', 82, 'ビジネス,法務', datetime('now'), datetime('now')),
+  ('deposit', 'WORD', 2, '預金する', '動詞', 73, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('fiscal', 'WORD', 2, '会計の、財政の', '形容詞', 77, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('revenue', 'WORD', 2, '総収益', '名詞', 84, 'ビジネス,財務', datetime('now'), datetime('now')),
+
+  -- 組織・管理
+  ('consistent', 'WORD', 2, '一貫した', '形容詞', 79, 'ビジネス,品質', datetime('now'), datetime('now')),
+  ('consultant', 'WORD', 2, 'コンサルタント', '名詞', 81, 'ビジネス,職業', datetime('now'), datetime('now')),
+  ('correspondent', 'WORD', 2, '特派員', '名詞', 66, 'ビジネス,メディア', datetime('now'), datetime('now')),
+  ('distribute', 'WORD', 2, '配布する、販売する', '動詞', 80, 'ビジネス,物流', datetime('now'), datetime('now')),
+  ('efficiency', 'WORD', 2, '効率', '名詞', 83, 'ビジネス,改善', datetime('now'), datetime('now')),
+  ('entrepreneur', 'WORD', 2, '起業家', '名詞', 74, 'ビジネス,経営', datetime('now'), datetime('now')),
+  ('exceptional', 'WORD', 2, '並外れた', '形容詞', 72, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('expedite', 'WORD', 2, '促進する', '動詞', 70, 'ビジネス,効率', datetime('now'), datetime('now')),
+
+  -- プロジェクト・実行
+  ('halt', 'WORD', 2, '停止する', '動詞', 68, 'ビジネス,中断', datetime('now'), datetime('now')),
+  ('implement', 'WORD', 2, '実装する、実行する', '動詞', 85, 'ビジネス,実行', datetime('now'), datetime('now')),
+  ('infrastructure', 'WORD', 2, 'インフラ、社会基盤', '名詞', 75, 'ビジネス,設備', datetime('now'), datetime('now')),
+  ('initiative', 'WORD', 2, '主導権、構想', '名詞', 78, 'ビジネス,リーダーシップ', datetime('now'), datetime('now')),
+  ('introductory', 'WORD', 2, '入門的な', '形容詞', 71, 'ビジネス,教育', datetime('now'), datetime('now')),
+  ('inventory', 'WORD', 2, '在庫', '名詞', 79, 'ビジネス,物流', datetime('now'), datetime('now')),
+  ('lease', 'WORD', 2, '賃貸借契約', '名詞', 76, 'ビジネス,不動産', datetime('now'), datetime('now')),
+
+  -- 品質・評価
+  ('distinguished', 'WORD', 2, '著名な', '形容詞', 70, 'ビジネス,評判', datetime('now'), datetime('now')),
+  ('distinctive', 'WORD', 2, '独特の', '形容詞', 73, 'ビジネス,特徴', datetime('now'), datetime('now')),
+  ('informative', 'WORD', 2, '有益な', '形容詞', 72, 'ビジネス,情報', datetime('now'), datetime('now')),
+  ('leading', 'WORD', 2, '主要な', '形容詞', 81, 'ビジネス,地位', datetime('now'), datetime('now')),
+  ('noteworthy', 'WORD', 2, '注目に値する', '形容詞', 69, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('outstanding', 'WORD', 2, '傑出した、未払いの', '形容詞', 77, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('stunning', 'WORD', 2, '驚くべき', '形容詞', 68, 'ビジネス,評価', datetime('now'), datetime('now')),
+  ('valuable', 'WORD', 2, '貴重な', '形容詞', 80, 'ビジネス,価値', datetime('now'), datetime('now')),
+
+  -- その他専門語彙
+  ('courteous', 'WORD', 2, '礼儀正しい', '形容詞', 71, 'ビジネス,マナー', datetime('now'), datetime('now')),
+  ('fragile', 'WORD', 2, '壊れやすい', '形容詞', 67, 'ビジネス,物流', datetime('now'), datetime('now')),
+  ('malfunction', 'WORD', 2, '故障', '名詞', 66, 'ビジネス,機械', datetime('now'), datetime('now')),
+  ('mandate', 'WORD', 2, '義務的な', '形容詞', 72, 'ビジネス,法務', datetime('now'), datetime('now')),
+  ('merger', 'WORD', 2, '合併', '名詞', 75, 'ビジネス,M&A', datetime('now'), datetime('now')),
+  ('offset', 'WORD', 2, '埋め合わせする', '動詞', 70, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('outlay', 'WORD', 2, '支出', '名詞', 68, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('outsource', 'WORD', 2, '外注する', '動詞', 76, 'ビジネス,委託', datetime('now'), datetime('now')),
+  ('overhaul', 'WORD', 2, '徹底的に見直す', '動詞', 69, 'ビジネス,改革', datetime('now'), datetime('now')),
+  ('patent', 'WORD', 2, '特許', '名詞', 73, 'ビジネス,知財', datetime('now'), datetime('now')),
+  ('payroll', 'WORD', 2, '賃金台帳', '名詞', 74, 'ビジネス,人事', datetime('now'), datetime('now')),
+  ('peer', 'WORD', 2, '同僚、同等の人', '名詞', 75, 'ビジネス,関係', datetime('now'), datetime('now')),
+  ('portfolio', 'WORD', 2, 'ポートフォリオ', '名詞', 77, 'ビジネス,投資', datetime('now'), datetime('now')),
+  ('proceed', 'WORD', 2, '進む、続ける', '動詞', 79, 'ビジネス,進行', datetime('now'), datetime('now')),
+  ('procedure', 'WORD', 2, '手順', '名詞', 82, 'ビジネス,プロセス', datetime('now'), datetime('now')),
+  ('projection', 'WORD', 2, '予測、見通し', '名詞', 76, 'ビジネス,計画', datetime('now'), datetime('now')),
+  ('quota', 'WORD', 2, 'ノルマ、割当量', '名詞', 74, 'ビジネス,目標', datetime('now'), datetime('now')),
+  ('regulate', 'WORD', 2, '規制する', '動詞', 78, 'ビジネス,法務', datetime('now'), datetime('now')),
+  ('reimburse', 'WORD', 2, '返済する', '動詞', 73, 'ビジネス,財務', datetime('now'), datetime('now')),
+  ('specification', 'WORD', 2, '仕様書', '名詞', 77, 'ビジネス,技術', datetime('now'), datetime('now')),
+  ('streamline', 'WORD', 2, '合理化する', '動詞', 75, 'ビジネス,効率', datetime('now'), datetime('now')),
+  ('transaction', 'WORD', 2, '取引', '名詞', 83, 'ビジネス,取引', datetime('now'), datetime('now')),
+  ('vendor', 'WORD', 2, '供給業者', '名詞', 80, 'ビジネス,取引', datetime('now'), datetime('now')),
+  ('verification', 'WORD', 2, '検証', '名詞', 72, 'ビジネス,確認', datetime('now'), datetime('now'));
+
+-- ========================================
+-- 確認クエリ
+-- ========================================
+
+-- 投入した単語数を確認
+SELECT
+  difficulty,
+  COUNT(*) as word_count
+FROM vocabularies
+WHERE type = 'WORD'
+GROUP BY difficulty
+ORDER BY difficulty;
+
+-- サンプル表示
+SELECT
+  word,
+  difficulty,
+  meaning,
+  part_of_speech,
+  tags
+FROM vocabularies
+WHERE type = 'WORD'
+ORDER BY difficulty, frequency DESC
+LIMIT 10;

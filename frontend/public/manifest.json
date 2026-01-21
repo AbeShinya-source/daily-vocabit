@@ -1,0 +1,18 @@
+{
+  "name": "DailyVocabit - 毎日の英語学習習慣",
+  "short_name": "DailyVocabit",
+  "description": "毎日の英語学習で、着実にスキルアップを目指そう",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#738ba8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

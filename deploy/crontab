@@ -1,0 +1,9 @@
+# TOEIC Daily - Cron Jobs
+# インストール: sudo crontab -u www-data /var/www/toeic-daily/deploy/crontab
+
+# 毎日深夜0時に問題を自動生成（難易度1と2、各10問）
+0 0 * * * cd /var/www/toeic-daily/backend && /usr/bin/php artisan questions:generate --difficulty=1 --count=10 --no-interaction >> /var/log/toeic-daily-questions.log 2>&1
+5 0 * * * cd /var/www/toeic-daily/backend && /usr/bin/php artisan questions:generate --difficulty=2 --count=10 --no-interaction >> /var/log/toeic-daily-questions.log 2>&1
+
+# Laravel スケジューラー（必要に応じて）
+# * * * * * cd /var/www/toeic-daily/backend && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
