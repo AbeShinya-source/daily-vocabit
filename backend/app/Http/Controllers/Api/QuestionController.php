@@ -22,6 +22,9 @@ class QuestionController extends Controller
         $difficulty = $request->query('difficulty', 1);
         $date = $request->query('date', now()->format('Y-m-d'));
 
+        // 日付と難易度からシード値を生成（同じ日・同じ難易度なら同じ問題セット）
+        $seed = crc32($date . '_' . $difficulty);
+
         // 1. 今日の日付で生成された問題を取得
         $questions = Question::whereDate('generated_date', $date)
             ->where('difficulty', $difficulty)
@@ -30,21 +33,27 @@ class QuestionController extends Controller
             ->limit(self::QUESTIONS_PER_DAY)
             ->get();
 
-        // 2. 問題数が足りない場合、過去の問題からランダムに補完
+        // 2. 問題数が足りない場合、過去の問題から決定的に補完
         $remainingCount = self::QUESTIONS_PER_DAY - $questions->count();
 
         if ($remainingCount > 0) {
             $usedIds = $questions->pluck('id')->toArray();
 
-            $fallbackQuestions = Question::where('difficulty', $difficulty)
+            // 全ての候補問題を取得
+            $candidateQuestions = Question::where('difficulty', $difficulty)
                 ->where('is_active', true)
                 ->whereNotIn('id', $usedIds)
                 ->whereNotNull('question_translation') // 和訳がある問題のみ
                 ->with('vocabulary')
-                ->inRandomOrder()
-                ->limit($remainingCount)
+                ->orderBy('id') // 決定的な順序で取得
                 ->get();
 
+            // シード値を使って決定的にシャッフル
+            $candidateArray = $candidateQuestions->all();
+            mt_srand($seed);
+            shuffle($candidateArray);
+
+            $fallbackQuestions = collect(array_slice($candidateArray, 0, $remainingCount));
             $questions = $questions->concat($fallbackQuestions);
         }
 
@@ -57,8 +66,12 @@ class QuestionController extends Controller
             ], 404);
         }
 
-        // 問題をシャッフルしてフォーマット
-        $formattedQuestions = $questions->shuffle()->map(function ($question) {
+        // シード値を使って決定的にシャッフル（同じ日なら同じ順序）
+        $questionsArray = $questions->all();
+        mt_srand($seed);
+        shuffle($questionsArray);
+
+        $formattedQuestions = collect($questionsArray)->map(function ($question) {
             return [
                 'id' => $question->id,
                 'type' => $question->type,
