@@ -297,12 +297,17 @@ PROMPT;
             // シャッフル後の正解のインデックスを見つける
             $newCorrectIndex = array_search($correctChoice, $choices);
 
+            // 解説文のアルファベット表記を更新（シャッフル後の正しい位置に）
+            $explanation = $data['explanation'];
+            $newLetter = chr(65 + $newCorrectIndex); // 0=A, 1=B, 2=C, 3=D
+            $explanation = preg_replace('/正解は\s*\(\K[A-D](?=\))/', $newLetter, $explanation);
+
             return [
                 'question_text' => $data['questionText'],
                 'question_translation' => $data['questionTranslation'],
                 'choices' => $choices, // Eloquent cast handles JSON encoding
                 'correct_index' => $newCorrectIndex,
-                'explanation' => $data['explanation']
+                'explanation' => $explanation
             ];
 
         } catch (\Exception $e) {
