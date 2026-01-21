@@ -108,6 +108,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuizStore } from '@/stores/quiz'
 import { useAuthStore } from '@/stores/auth'
+import { quizSessionApi } from '@/api/client'
 
 const router = useRouter()
 const quizStore = useQuizStore()
@@ -164,6 +165,20 @@ async function startQuiz() {
   quizStore.setModeAndDifficulty('vocab', difficulty.value)
   try {
     await quizStore.loadDailyQuestions()
+
+    // ログイン済みの場合、セッションを開始
+    if (auth.isAuthenticated) {
+      try {
+        const response = await quizSessionApi.start(difficulty.value)
+        if (response.success && response.data?.sessionId) {
+          quizStore.sessionId = response.data.sessionId
+        }
+      } catch (err) {
+        console.error('Failed to start quiz session:', err)
+        // セッション開始に失敗してもクイズは続行
+      }
+    }
+
     router.push({ name: 'Quiz' })
   } catch (e) {
     console.error(e)

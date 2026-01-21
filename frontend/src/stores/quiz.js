@@ -10,6 +10,7 @@ export const useQuizStore = defineStore('quiz', () => {
   const currentIndex = ref(0)
   const answers = ref([]) // { questionId, selectedIndex, isCorrect }[]
   const isLoaded = ref(false)
+  const sessionId = ref(null) // Quiz session ID for tracking
 
   const currentQuestion = computed(() => {
     return questions.value[currentIndex.value] || null
@@ -29,6 +30,7 @@ export const useQuizStore = defineStore('quiz', () => {
     currentIndex.value = 0
     answers.value = []
     isLoaded.value = false
+    sessionId.value = null
   }
 
   function setModeAndDifficulty(newMode, newDifficulty) {
@@ -142,6 +144,7 @@ export const useQuizStore = defineStore('quiz', () => {
     currentIndex,
     answers,
     isLoaded,
+    sessionId,
     currentQuestion,
     totalQuestions,
     isFinished,

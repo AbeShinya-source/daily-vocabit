@@ -93,12 +93,26 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuizStore } from '@/stores/quiz'
+import { useAuthStore } from '@/stores/auth'
+import { quizSessionApi } from '@/api/client'
 
 const router = useRouter()
 const quiz = useQuizStore()
+const auth = useAuthStore()
+
+// 結果画面が表示されたらセッションを完了
+onMounted(async () => {
+  if (auth.isAuthenticated && quiz.sessionId) {
+    try {
+      await quizSessionApi.complete(quiz.sessionId, quiz.score)
+    } catch (err) {
+      console.error('Failed to complete quiz session:', err)
+    }
+  }
+})
 
 const scorePercentage = computed(() => {
   return Math.round((quiz.score / quiz.totalQuestions) * 100)
