@@ -10,6 +10,14 @@ import BadgesView from '@/views/BadgesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    // ブラウザの戻る/進むボタンを使った場合は保存された位置を使用
+    if (savedPosition) {
+      return savedPosition
+    }
+    // それ以外は常にトップにスクロール
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',
