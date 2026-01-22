@@ -12,6 +12,7 @@ class QuizSessionController extends Controller
 {
     /**
      * クイズセッションを開始
+     * 同じ日・同じ難易度のセッションが既にある場合は上書き
      */
     public function start(Request $request): JsonResponse
     {
@@ -28,16 +29,35 @@ class QuizSessionController extends Controller
         }
 
         $user = $request->user();
+        $today = now()->startOfDay();
 
-        $session = QuizSession::create([
-            'user_id' => $user->id,
-            'difficulty' => $request->difficulty,
-            'quiz_date' => now()->format('Y-m-d'),
-            'total_questions' => 10,
-            'correct_count' => 0,
-            'is_completed' => false,
-            'started_at' => now(),
-        ]);
+        // 同じ日・同じ難易度の既存セッションを検索
+        $existingSession = QuizSession::where('user_id', $user->id)
+            ->whereDate('quiz_date', $today)
+            ->where('difficulty', $request->difficulty)
+            ->first();
+
+        if ($existingSession) {
+            // 既存セッションをリセットして再利用
+            $existingSession->update([
+                'correct_count' => 0,
+                'is_completed' => false,
+                'started_at' => now(),
+                'completed_at' => null,
+            ]);
+            $session = $existingSession;
+        } else {
+            // 新規セッション作成
+            $session = QuizSession::create([
+                'user_id' => $user->id,
+                'difficulty' => $request->difficulty,
+                'quiz_date' => $today,
+                'total_questions' => 10,
+                'correct_count' => 0,
+                'is_completed' => false,
+                'started_at' => now(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,

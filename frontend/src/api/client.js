@@ -10,13 +10,15 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`
 
+  const { headers: optionHeaders, ...restOptions } = options
+
   const config = {
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      ...options.headers,
+      ...optionHeaders,
     },
-    ...options,
   }
 
   try {
