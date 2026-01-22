@@ -178,9 +178,9 @@ function choiceClass(q, cIdx) {
   return 'choice-default'
 }
 
-function backToTitle() {
+async function backToTitle() {
+  await router.push({ name: 'Title' })
   quiz.resetQuiz()
-  router.push({ name: 'Title' })
 }
 </script>
 

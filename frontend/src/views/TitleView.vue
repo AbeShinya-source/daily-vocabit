@@ -436,12 +436,13 @@ async function handleLogout() {
 
 /* User Section */
 .user-section {
-  position: absolute;
+  position: fixed;
   top: 1rem;
   right: 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  z-index: 10;
 }
 
 .user-info {
