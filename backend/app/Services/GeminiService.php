@@ -283,6 +283,7 @@ PROMPT;
             }
 
             // 選択肢をシャッフルして正解の位置をランダム化
+            $originalChoices = $data['choices'];
             $choices = $data['choices'];
             $correctChoice = $choices[$data['correctIndex']];
 
@@ -297,10 +298,26 @@ PROMPT;
             // シャッフル後の正解のインデックスを見つける
             $newCorrectIndex = array_search($correctChoice, $choices);
 
-            // 解説文のアルファベット表記を更新（シャッフル後の正しい位置に）
+            // 旧インデックス → 新インデックスのマッピングを作成
+            $indexMapping = [];
+            foreach ($originalChoices as $oldIndex => $choice) {
+                $newIndex = array_search($choice, $choices);
+                $indexMapping[$oldIndex] = $newIndex;
+            }
+
+            // 解説文のすべての選択肢アルファベット表記を更新
             $explanation = $data['explanation'];
-            $newLetter = chr(65 + $newCorrectIndex); // 0=A, 1=B, 2=C, 3=D
-            $explanation = preg_replace('/正解は\s*\(\K[A-D](?=\))/', $newLetter, $explanation);
+            // 一旦プレースホルダーに置換（連鎖的な置換を防ぐため）
+            $explanation = preg_replace_callback('/\(([A-D])\)/', function($matches) use ($indexMapping) {
+                $oldLetter = $matches[1];
+                $oldIndex = ord($oldLetter) - 65; // A=0, B=1, C=2, D=3
+                return '(__PLACEHOLDER_' . $oldIndex . '__)';
+            }, $explanation);
+            // プレースホルダーを新しいアルファベットに置換
+            foreach ($indexMapping as $oldIndex => $newIndex) {
+                $newLetter = chr(65 + $newIndex);
+                $explanation = str_replace('(__PLACEHOLDER_' . $oldIndex . '__)', '(' . $newLetter . ')', $explanation);
+            }
 
             return [
                 'question_text' => $data['questionText'],
