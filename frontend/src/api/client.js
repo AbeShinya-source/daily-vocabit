@@ -92,9 +92,11 @@ export const answersApi = {
    * @param {number} data.user_id - ユーザーID (オプション)
    */
   async submit(data) {
+    const token = localStorage.getItem('auth_token')
     return apiRequest('/answers', {
       method: 'POST',
       body: JSON.stringify(data),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
   },
 

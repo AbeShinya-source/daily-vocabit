@@ -61,9 +61,9 @@ Route::prefix('questions')->group(function () {
     Route::get('/', [QuestionController::class, 'index']);
 });
 
-// 回答記録API
-Route::prefix('answers')->group(function () {
-    // 回答を記録
+// 回答記録API（オプショナル認証）
+Route::prefix('answers')->middleware('auth:sanctum')->group(function () {
+    // 回答を記録（認証ユーザーのみ）
     Route::post('/', [AnswerController::class, 'store']);
 
     // ユーザーの回答履歴を取得
