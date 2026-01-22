@@ -307,16 +307,34 @@ PROMPT;
 
             // 解説文のすべての選択肢アルファベット表記を更新
             $explanation = $data['explanation'];
-            // 一旦プレースホルダーに置換（連鎖的な置換を防ぐため）
+
+            // パターン1: (A), (B), (C), (D) 形式
             $explanation = preg_replace_callback('/\(([A-D])\)/', function($matches) use ($indexMapping) {
                 $oldLetter = $matches[1];
-                $oldIndex = ord($oldLetter) - 65; // A=0, B=1, C=2, D=3
-                return '(__PLACEHOLDER_' . $oldIndex . '__)';
+                $oldIndex = ord($oldLetter) - 65;
+                return '(__PAREN_' . $oldIndex . '__)';
             }, $explanation);
+
+            // パターン2: A. B. C. D. 形式（行頭または空白後）
+            $explanation = preg_replace_callback('/(?<=^|\s)([A-D])\./', function($matches) use ($indexMapping) {
+                $oldLetter = $matches[1];
+                $oldIndex = ord($oldLetter) - 65;
+                return '(__DOT_' . $oldIndex . '__)';
+            }, $explanation);
+
+            // パターン3: A: B: C: D: 形式
+            $explanation = preg_replace_callback('/(?<=^|\s)([A-D]):/', function($matches) use ($indexMapping) {
+                $oldLetter = $matches[1];
+                $oldIndex = ord($oldLetter) - 65;
+                return '(__COLON_' . $oldIndex . '__)';
+            }, $explanation);
+
             // プレースホルダーを新しいアルファベットに置換
             foreach ($indexMapping as $oldIndex => $newIndex) {
                 $newLetter = chr(65 + $newIndex);
-                $explanation = str_replace('(__PLACEHOLDER_' . $oldIndex . '__)', '(' . $newLetter . ')', $explanation);
+                $explanation = str_replace('(__PAREN_' . $oldIndex . '__)', '(' . $newLetter . ')', $explanation);
+                $explanation = str_replace('(__DOT_' . $oldIndex . '__)', $newLetter . '.', $explanation);
+                $explanation = str_replace('(__COLON_' . $oldIndex . '__)', $newLetter . ':', $explanation);
             }
 
             return [
