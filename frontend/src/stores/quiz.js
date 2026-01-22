@@ -1,7 +1,7 @@
 // src/stores/quiz.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { questionsApi, answersApi } from '@/api/client'
+import { questionsApi, answersApi, quizSessionApi } from '@/api/client'
 
 export const useQuizStore = defineStore('quiz', () => {
   const mode = ref(null) // 'vocab' | 'idiom'
@@ -44,6 +44,20 @@ export const useQuizStore = defineStore('quiz', () => {
     }
 
     try {
+      // クイズセッションを開始（認証ユーザーの場合）
+      const token = localStorage.getItem('auth_token')
+      if (token) {
+        try {
+          const sessionResponse = await quizSessionApi.start(difficulty.value)
+          if (sessionResponse.success) {
+            sessionId.value = sessionResponse.data.session.id
+          }
+        } catch (sessionError) {
+          console.error('Failed to start quiz session:', sessionError)
+          // セッション開始に失敗しても続行
+        }
+      }
+
       // APIから今日の問題を取得（単語とイディオムの組み合わせ）
       const response = await questionsApi.getDaily({
         difficulty: difficulty.value,
@@ -119,10 +133,15 @@ export const useQuizStore = defineStore('quiz', () => {
 
     // APIに回答を記録（バックグラウンドで実行）
     try {
-      await answersApi.submit({
+      const submitData = {
         question_id: q.id,
         selected_index: selectedIndex,
-      })
+      }
+      // セッションIDがあれば含める
+      if (sessionId.value) {
+        submitData.quiz_session_id = sessionId.value
+      }
+      await answersApi.submit(submitData)
     } catch (error) {
       console.error('Failed to submit answer to API:', error)
       // エラーでも続行（ローカルには保存済み）

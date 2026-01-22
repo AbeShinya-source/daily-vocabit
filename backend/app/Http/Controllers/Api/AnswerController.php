@@ -23,7 +23,8 @@ class AnswerController extends Controller
         $validator = Validator::make($request->all(), [
             'question_id' => 'required|integer|exists:questions,id',
             'selected_index' => 'required|integer|min:0|max:3',
-            'user_id' => 'nullable|integer|exists:users,id'
+            'user_id' => 'nullable|integer|exists:users,id',
+            'quiz_session_id' => 'nullable|integer|exists:quiz_sessions,id'
         ]);
 
         if ($validator->fails()) {
@@ -53,6 +54,7 @@ class AnswerController extends Controller
         // 回答を記録
         $answer = UserAnswer::create([
             'user_id' => $userId,
+            'quiz_session_id' => $request->quiz_session_id,
             'question_id' => $request->question_id,
             'selected_index' => $request->selected_index,
             'is_correct' => $isCorrect,
