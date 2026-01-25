@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'google_id',
         'avatar',
+        'is_admin',
     ];
 
     protected $hidden = [
@@ -28,7 +29,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
+
+    /**
+     * 管理者かどうかを判定
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
 
     /**
      * ユーザーの回答履歴

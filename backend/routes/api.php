@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\QuizSessionController;
 use App\Http\Controllers\Api\BadgeController;
+use App\Http\Controllers\Api\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,4 +118,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/recent', [BadgeController::class, 'recent']);
         Route::get('/history', [BadgeController::class, 'history']);
     });
+});
+
+// 管理者専用API
+Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
+    // ダッシュボード
+    Route::get('/dashboard', [AdminController::class, 'dashboard']);
+
+    // 問題管理
+    Route::get('/questions', [AdminController::class, 'questions']);
+    Route::get('/questions/dates', [AdminController::class, 'questionDates']);
+
+    // 語彙管理
+    Route::get('/vocabularies', [AdminController::class, 'vocabularies']);
+    Route::get('/vocabularies/{id}', [AdminController::class, 'vocabularyShow']);
+    Route::post('/vocabularies', [AdminController::class, 'vocabularyStore']);
+    Route::put('/vocabularies/{id}', [AdminController::class, 'vocabularyUpdate']);
+    Route::delete('/vocabularies/{id}', [AdminController::class, 'vocabularyDestroy']);
 });

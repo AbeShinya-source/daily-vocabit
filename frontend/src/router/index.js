@@ -7,6 +7,9 @@ import AuthView from '@/views/AuthView.vue'
 import MyPageView from '@/views/MyPageView.vue'
 import SessionResultView from '@/views/SessionResultView.vue'
 import BadgesView from '@/views/BadgesView.vue'
+import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
+import AdminQuestionsView from '@/views/admin/AdminQuestionsView.vue'
+import AdminVocabulariesView from '@/views/admin/AdminVocabulariesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +56,22 @@ const router = createRouter({
       path: '/badges',
       name: 'Badges',
       component: BadgesView,
+    },
+    // 管理画面
+    {
+      path: '/admin',
+      name: 'AdminDashboard',
+      component: AdminDashboardView,
+    },
+    {
+      path: '/admin/questions',
+      name: 'AdminQuestions',
+      component: AdminQuestionsView,
+    },
+    {
+      path: '/admin/vocabularies',
+      name: 'AdminVocabularies',
+      component: AdminVocabulariesView,
     },
   ],
 })

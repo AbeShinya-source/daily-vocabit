@@ -192,7 +192,7 @@ class GeminiService
    - 綴りや発音が似ている単語も適度に含める
    - 公式TOEIC問題のような、受験者が文脈を正しく理解しないと間違えやすい選択肢
 6. 全ての選択肢は同じ品詞で統一する
-7. **重要**: choices配列の中で「{$word}」がどの位置にあるかを確認し、そのインデックス番号（0, 1, 2, または 3）をcorrectIndexに設定すること
+7. **正解の位置をランダムに決定**: 正解「{$word}」をchoices配列の0〜3のいずれかの位置にランダムに配置し、その位置をcorrectIndexに設定すること（毎回同じ位置にしないこと）
 
 【出力形式】
 以下のJSON形式で出力してください。JSONのみを出力し、他の説明文は含めないでください。
@@ -201,22 +201,31 @@ class GeminiService
 {
   "questionText": "問題文（英語。空欄は _____ で表現）",
   "questionTranslation": "問題文の日本語訳全文",
-  "choices": ["選択肢1", "選択肢2", "選択肢3", "選択肢4"],
+  "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D"],
   "correctIndex": 0,
-  "correctExplanation": "正解の選択肢についての解説文（なぜこれが正解なのか）",
-  "wrongExplanations": ["選択肢1が不正解の理由", "選択肢2が不正解の理由", "選択肢3が不正解の理由"]
+  "explanation": "解説文"
 }
 ```
 
-**解説フィールドの説明:**
-- correctExplanation: 正解の選択肢についての詳細な解説（単語/イディオムの意味、文脈での使い方、なぜこの答えが適切かを説明）
-- wrongExplanations: 不正解の3つの選択肢それぞれについて、なぜ不正解なのかを簡潔に説明（choicesの順序で、正解以外の3つ分）
+**explanationフィールドの形式（必須）:**
+以下の形式で解説文を作成してください：
 
-**correctIndexの設定方法（必須）:**
+正解は (X) 『正解の単語』です。
+
+[正解の単語/イディオムの意味、文脈での使い方、なぜこの答えが適切かの詳細な解説]
+
+他の選択肢:
+(A) 単語A: [なぜ不正解かの簡潔な説明]
+(B) 単語B: [なぜ不正解かの簡潔な説明]
+(C) 単語C: [なぜ不正解かの簡潔な説明]
+
+※ (X) は正解のアルファベット（A/B/C/D）に置き換え、「他の選択肢」には不正解の3つのみを記載してください。
+※ アルファベットはchoices配列の順序に対応: インデックス0=A, 1=B, 2=C, 3=D
+
+**correctIndexの設定（必須）:**
 - choicesの配列を作成後、「{$word}」がどのインデックスに配置されているか確認してください
 - 例: choices = ["incorrect1", "{$word}", "incorrect2", "incorrect3"] の場合、correctIndex = 1
 - 例: choices = ["incorrect1", "incorrect2", "incorrect3", "{$word}"] の場合、correctIndex = 3
-- correctIndexは必ず「{$word}」が含まれる選択肢の正確な位置（0-3）を指定してください
 PROMPT;
     }
 
@@ -237,15 +246,7 @@ PROMPT;
         try {
             $data = json_decode($jsonText, true);
 
-            // 新形式（correctExplanation + wrongExplanations）または旧形式（explanation）をサポート
-            $hasNewFormat = isset($data['correctExplanation'], $data['wrongExplanations']);
-            $hasOldFormat = isset($data['explanation']);
-
-            if (!$data || !isset($data['questionText'], $data['questionTranslation'], $data['choices'], $data['correctIndex'])) {
-                return null;
-            }
-
-            if (!$hasNewFormat && !$hasOldFormat) {
+            if (!$data || !isset($data['questionText'], $data['questionTranslation'], $data['choices'], $data['correctIndex'], $data['explanation'])) {
                 return null;
             }
 
@@ -268,7 +269,7 @@ PROMPT;
                     }
                 }
 
-                // AIが間違ったインデックスを返した場合、修正する
+                // AIが間違ったインデックスを返した場合、修正してログを出力
                 if ($actualCorrectIndex !== null && $actualCorrectIndex !== $data['correctIndex']) {
                     Log::warning('Corrected incorrect correctIndex from AI', [
                         'word' => $targetWord,
@@ -280,150 +281,18 @@ PROMPT;
                 }
             }
 
-            // 選択肢をシャッフルして正解の位置をランダム化
-            $originalChoices = $data['choices'];
-            $originalCorrectIndex = $data['correctIndex'];
-            $choices = $data['choices'];
-            $correctChoice = $choices[$originalCorrectIndex];
-
-            // Fisher-Yatesアルゴリズムでシャッフル
-            for ($i = count($choices) - 1; $i > 0; $i--) {
-                $j = random_int(0, $i);
-                $temp = $choices[$i];
-                $choices[$i] = $choices[$j];
-                $choices[$j] = $temp;
-            }
-
-            // シャッフル後の正解のインデックスを見つける
-            $newCorrectIndex = array_search($correctChoice, $choices);
-
-            // 解説文を組み立てる
-            if ($hasNewFormat) {
-                // 新形式: コード側で解説文を組み立てる
-                $explanation = $this->buildExplanation(
-                    $choices,
-                    $newCorrectIndex,
-                    $data['correctExplanation'],
-                    $originalChoices,
-                    $originalCorrectIndex,
-                    $data['wrongExplanations']
-                );
-            } else {
-                // 旧形式: 既存のロジックで置換（フォールバック）
-                $explanation = $this->updateExplanationLabels(
-                    $data['explanation'],
-                    $originalChoices,
-                    $choices
-                );
-            }
-
             return [
                 'question_text' => $data['questionText'],
                 'question_translation' => $data['questionTranslation'],
-                'choices' => $choices,
-                'correct_index' => $newCorrectIndex,
-                'explanation' => $explanation
+                'choices' => $data['choices'],
+                'correct_index' => $data['correctIndex'],
+                'explanation' => $data['explanation']
             ];
 
         } catch (\Exception $e) {
             Log::error('JSON parse error', ['error' => $e->getMessage(), 'text' => $jsonText]);
             return null;
         }
-    }
-
-    /**
-     * 解説文を組み立てる（新形式用）
-     */
-    private function buildExplanation(
-        array $shuffledChoices,
-        int $correctIndex,
-        string $correctExplanation,
-        array $originalChoices,
-        int $originalCorrectIndex,
-        array $wrongExplanations
-    ): string {
-        $correctLetter = chr(65 + $correctIndex); // A, B, C, D
-        $correctWord = $shuffledChoices[$correctIndex];
-
-        // 正解の解説
-        $explanation = "正解は ({$correctLetter}) 『{$correctWord}』です。\n\n";
-        $explanation .= $correctExplanation . "\n\n";
-
-        // 不正解の選択肢の解説を追加
-        // wrongExplanationsは元の順序（正解を除いた3つ）で格納されている
-        $wrongExpIndex = 0;
-        $wrongParts = [];
-
-        for ($i = 0; $i < 4; $i++) {
-            // シャッフル後の各選択肢について
-            $choice = $shuffledChoices[$i];
-            $letter = chr(65 + $i);
-
-            // 正解はスキップ
-            if ($i === $correctIndex) {
-                continue;
-            }
-
-            // 元の配列でのインデックスを見つける
-            $originalIndex = array_search($choice, $originalChoices);
-
-            // wrongExplanationsのインデックスを計算（正解を除いた順序）
-            $wrongExpIdx = $originalIndex < $originalCorrectIndex ? $originalIndex : $originalIndex - 1;
-
-            if (isset($wrongExplanations[$wrongExpIdx])) {
-                $wrongParts[] = "({$letter}) {$choice}: {$wrongExplanations[$wrongExpIdx]}";
-            }
-        }
-
-        if (!empty($wrongParts)) {
-            $explanation .= "他の選択肢:\n" . implode("\n", $wrongParts);
-        }
-
-        return $explanation;
-    }
-
-    /**
-     * 解説文のラベルを更新（旧形式用フォールバック）
-     */
-    private function updateExplanationLabels(string $explanation, array $originalChoices, array $shuffledChoices): string
-    {
-        // 旧インデックス → 新インデックスのマッピングを作成
-        $indexMapping = [];
-        foreach ($originalChoices as $oldIndex => $choice) {
-            $newIndex = array_search($choice, $shuffledChoices);
-            $indexMapping[$oldIndex] = $newIndex;
-        }
-
-        // パターン1: (A), (B), (C), (D) 形式
-        $explanation = preg_replace_callback('/\(([A-D])\)/', function($matches) use ($indexMapping) {
-            $oldLetter = $matches[1];
-            $oldIndex = ord($oldLetter) - 65;
-            return '(__PAREN_' . $oldIndex . '__)';
-        }, $explanation);
-
-        // パターン2: A. B. C. D. 形式（行頭または空白後）
-        $explanation = preg_replace_callback('/(?:^|(?<=\s))([A-D])\./', function($matches) use ($indexMapping) {
-            $oldLetter = $matches[1];
-            $oldIndex = ord($oldLetter) - 65;
-            return '(__DOT_' . $oldIndex . '__)';
-        }, $explanation);
-
-        // パターン3: A: B: C: D: 形式
-        $explanation = preg_replace_callback('/(?:^|(?<=\s))([A-D]):/', function($matches) use ($indexMapping) {
-            $oldLetter = $matches[1];
-            $oldIndex = ord($oldLetter) - 65;
-            return '(__COLON_' . $oldIndex . '__)';
-        }, $explanation);
-
-        // プレースホルダーを新しいアルファベットに置換
-        foreach ($indexMapping as $oldIndex => $newIndex) {
-            $newLetter = chr(65 + $newIndex);
-            $explanation = str_replace('(__PAREN_' . $oldIndex . '__)', '(' . $newLetter . ')', $explanation);
-            $explanation = str_replace('(__DOT_' . $oldIndex . '__)', $newLetter . '.', $explanation);
-            $explanation = str_replace('(__COLON_' . $oldIndex . '__)', $newLetter . ':', $explanation);
-        }
-
-        return $explanation;
     }
 
     /**

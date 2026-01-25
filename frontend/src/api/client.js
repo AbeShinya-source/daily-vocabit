@@ -489,3 +489,122 @@ export const authApi = {
     })
   },
 }
+
+/**
+ * 管理者 API
+ */
+export const adminApi = {
+  /**
+   * ダッシュボード統計を取得
+   */
+  async getDashboard() {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest('/admin/dashboard', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  /**
+   * 日ごとの問題一覧を取得
+   * @param {string} date - 日付 (YYYY-MM-DD)
+   * @param {number} difficulty - 難易度
+   */
+  async getQuestions(date, difficulty = null) {
+    const token = localStorage.getItem('auth_token')
+    const params = new URLSearchParams({ date })
+    if (difficulty) params.append('difficulty', difficulty)
+
+    return apiRequest(`/admin/questions?${params}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  /**
+   * 問題の日付一覧を取得
+   */
+  async getQuestionDates() {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest('/admin/questions/dates', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  /**
+   * 語彙一覧を取得
+   * @param {Object} params - クエリパラメータ
+   */
+  async getVocabularies(params = {}) {
+    const token = localStorage.getItem('auth_token')
+    const queryParams = new URLSearchParams(params)
+
+    return apiRequest(`/admin/vocabularies?${queryParams}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  /**
+   * 語彙詳細を取得
+   * @param {number} id - 語彙ID
+   */
+  async getVocabulary(id) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest(`/admin/vocabularies/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+
+  /**
+   * 語彙を作成
+   * @param {Object} data - 語彙データ
+   */
+  async createVocabulary(data) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest('/admin/vocabularies', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 語彙を更新
+   * @param {number} id - 語彙ID
+   * @param {Object} data - 語彙データ
+   */
+  async updateVocabulary(id, data) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest(`/admin/vocabularies/${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * 語彙を削除
+   * @param {number} id - 語彙ID
+   */
+  async deleteVocabulary(id) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest(`/admin/vocabularies/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  },
+}

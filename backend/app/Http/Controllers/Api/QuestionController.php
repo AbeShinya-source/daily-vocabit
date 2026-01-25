@@ -16,11 +16,29 @@ class QuestionController extends Controller
      * @return JsonResponse
      */
     private const QUESTIONS_PER_DAY = 10;
+    private const DAILY_RESET_HOUR = 9; // 日本時間9:00に問題が切り替わる
+
+    /**
+     * 9:00基準で「今日の日付」を取得
+     * - 9:00より前: 前日の日付
+     * - 9:00以降: 当日の日付
+     */
+    private function getTodayDateForQuiz(): string
+    {
+        $now = now(); // Asia/Tokyoタイムゾーン
+
+        if ($now->hour < self::DAILY_RESET_HOUR) {
+            // 9:00より前は前日の問題を表示
+            return $now->subDay()->format('Y-m-d');
+        }
+
+        return $now->format('Y-m-d');
+    }
 
     public function getDaily(Request $request): JsonResponse
     {
         $difficulty = $request->query('difficulty', 1);
-        $date = $request->query('date', now()->format('Y-m-d'));
+        $date = $request->query('date', $this->getTodayDateForQuiz());
 
         // 日付と難易度からシード値を生成（同じ日・同じ難易度なら同じ問題セット）
         $seed = crc32($date . '_' . $difficulty);

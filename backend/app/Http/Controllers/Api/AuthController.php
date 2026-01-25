@@ -104,6 +104,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,
+                    'is_admin' => $user->is_admin,
                 ],
                 'token' => $token,
             ]
@@ -171,6 +172,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,
+                    'is_admin' => $user->is_admin,
                 ],
                 'token' => $token,
             ]
@@ -209,6 +211,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,
+                    'is_admin' => $user->is_admin,
                 ],
                 'token' => $token,
             ]
@@ -244,6 +247,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,
+                    'is_admin' => $user->is_admin,
                 ],
             ]
         ]);
@@ -294,6 +298,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,
+                    'is_admin' => $user->is_admin,
                 ],
                 'token' => $token,
             ]

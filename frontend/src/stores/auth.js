@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', () => {
   const pendingEmail = ref(null) // 認証コード送信後のメールアドレス
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
+  const isAdmin = computed(() => !!user.value && user.value.is_admin === true)
 
   function setAuth(userData, authToken) {
     user.value = userData
@@ -227,6 +228,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     pendingEmail,
     isAuthenticated,
+    isAdmin,
     sendVerificationCode,
     verifyCode,
     resendVerificationCode,

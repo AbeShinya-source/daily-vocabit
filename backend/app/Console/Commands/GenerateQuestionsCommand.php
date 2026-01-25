@@ -14,6 +14,9 @@ class GenerateQuestionsCommand extends Command
     /**
      * コマンド名と引数
      *
+     * 注意: 問題は日本時間9:00に切り替わる仕様のため、
+     * 8:00に生成された問題は9:00から表示される
+     *
      * @var string
      */
     protected $signature = 'questions:generate
@@ -174,87 +177,48 @@ class GenerateQuestionsCommand extends Command
     }
 
     /**
-     * 語彙を選択（単語とイディオムを組み合わせ、今日追加された語彙を優先）
+     * 語彙を選択（登録済みの単語とイディオムからランダムにピック）
      */
     private function selectVocabularies(int $difficulty, int $count, string $date): array
     {
-        $today = now()->format('Y-m-d');
-        $vocabularies = [];
+        // 単語とイディオムを半々くらいで取得
+        $wordCount = (int) ceil($count / 2);
+        $idiomCount = $count - $wordCount;
 
-        // 1. 今日追加された単語とイディオム（指定難易度）を取得
-        $todayWords = Vocabulary::where('type', 'WORD')
+        $words = Vocabulary::where('type', 'WORD')
             ->where('difficulty', $difficulty)
-            ->whereDate('created_at', $today)
             ->inRandomOrder()
+            ->limit($wordCount)
             ->get()
             ->toArray();
 
-        $todayIdioms = Vocabulary::where('type', 'IDIOM')
+        $idioms = Vocabulary::where('type', 'IDIOM')
             ->where('difficulty', $difficulty)
-            ->whereDate('created_at', $today)
             ->inRandomOrder()
+            ->limit($idiomCount)
             ->get()
             ->toArray();
 
-        $todayCount = count($todayWords) + count($todayIdioms);
+        $this->info("📚 語彙を選択しました（単語: " . count($words) . "件、イディオム: " . count($idioms) . "件）");
 
-        if ($todayCount > 0) {
-            $this->info("✨ 今日追加された語彙を {$todayCount} 件使用します（単語: " . count($todayWords) . "、イディオム: " . count($todayIdioms) . "）");
-        }
+        $vocabularies = array_merge($words, $idioms);
 
-        $vocabularies = array_merge($todayWords, $todayIdioms);
-
-        // 2. 足りない分は過去の語彙（指定難易度）からランダムに取得
+        // 足りない場合は他方から補充
         $remainingCount = $count - count($vocabularies);
-
         if ($remainingCount > 0) {
             $usedIds = array_column($vocabularies, 'id');
 
-            $wordCount = ceil($remainingCount / 2);
-            $idiomCount = $remainingCount - $wordCount;
-
-            $existingWords = Vocabulary::where('type', 'WORD')
-                ->where('difficulty', $difficulty)
+            $additional = Vocabulary::where('difficulty', $difficulty)
                 ->whereNotIn('id', $usedIds)
-                ->inRandomOrder()
-                ->limit($wordCount)
-                ->get()
-                ->toArray();
-
-            $existingIdioms = Vocabulary::where('type', 'IDIOM')
-                ->where('difficulty', $difficulty)
-                ->whereNotIn('id', $usedIds)
-                ->inRandomOrder()
-                ->limit($idiomCount)
-                ->get()
-                ->toArray();
-
-            $vocabularies = array_merge($vocabularies, $existingWords, $existingIdioms);
-
-            if (count($existingWords) + count($existingIdioms) > 0) {
-                $this->info("📚 過去の語彙（難易度{$difficulty}）から " . (count($existingWords) + count($existingIdioms)) . " 件追加しました");
-            }
-        }
-
-        // 3. まだ足りない場合は全難易度からランダムに取得（フォールバック）
-        $remainingCount = $count - count($vocabularies);
-
-        if ($remainingCount > 0) {
-            $usedIds = array_column($vocabularies, 'id');
-
-            $fallbackVocabs = Vocabulary::whereNotIn('id', $usedIds)
                 ->inRandomOrder()
                 ->limit($remainingCount)
                 ->get()
                 ->toArray();
 
-            if (count($fallbackVocabs) > 0) {
-                $this->warn("⚠️  難易度{$difficulty}の語彙が不足のため、他の難易度から " . count($fallbackVocabs) . " 件追加しました");
-                $vocabularies = array_merge($vocabularies, $fallbackVocabs);
-            }
+            $vocabularies = array_merge($vocabularies, $additional);
         }
 
-        // シャッフルして単語とイディオムを混ぜる
+        // シャッフルして混ぜる
         shuffle($vocabularies);
 
         return array_slice($vocabularies, 0, $count);
