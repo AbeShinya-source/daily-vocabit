@@ -21,3 +21,10 @@ Schedule::command('questions:generate --difficulty=2 --count=10')
     ->dailyAt('08:10')
     ->name('generate-hard-questions')
     ->withoutOverlapping();
+
+// 毎日日本時間の9:00に通知メールを送信
+Schedule::command('notifications:send-daily')
+    ->timezone('Asia/Tokyo')
+    ->dailyAt('09:00')
+    ->name('send-daily-notifications')
+    ->withoutOverlapping();

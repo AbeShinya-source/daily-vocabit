@@ -47,6 +47,8 @@ Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         // 現在のユーザー情報
         Route::get('/me', [AuthController::class, 'me']);
+        // 通知設定を更新
+        Route::put('/notification-settings', [AuthController::class, 'updateNotificationSettings']);
     });
 });
 

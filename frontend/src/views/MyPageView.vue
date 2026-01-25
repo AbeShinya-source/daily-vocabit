@@ -51,6 +51,26 @@
         </div>
       </section>
 
+      <!-- Notification Settings -->
+      <section class="settings-card">
+        <h3 class="section-title">通知設定</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">メール通知</span>
+            <span class="setting-description">毎日9時に新しい問題の通知を受け取る</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              :checked="auth.user?.email_notification_enabled"
+              @change="toggleNotification"
+              :disabled="isUpdatingNotification"
+            />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </section>
+
       <!-- Stats Overview -->
       <section class="stats-overview">
         <h3 class="section-title">学習統計</h3>
@@ -342,6 +362,7 @@ const auth = useAuthStore()
 
 const isLoading = ref(true)
 const isLoadingMore = ref(false)
+const isUpdatingNotification = ref(false)
 const stats = ref({
   total: null,
   today: null,
@@ -623,6 +644,21 @@ function goToBadges() {
   router.push({ name: 'Badges' })
 }
 
+async function toggleNotification(event) {
+  const enabled = event.target.checked
+  isUpdatingNotification.value = true
+
+  try {
+    const result = await auth.updateNotificationSettings(enabled)
+    if (!result.success) {
+      // Revert the checkbox on failure
+      event.target.checked = !enabled
+    }
+  } finally {
+    isUpdatingNotification.value = false
+  }
+}
+
 // Badge icons as render functions
 const badgeIcons = {
   flame: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
@@ -844,6 +880,90 @@ function getBadgeIcon(iconName) {
   font-size: 0.8125rem;
   color: #64748b;
   margin-top: 0.25rem;
+}
+
+/* Settings Card */
+.settings-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.setting-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.setting-description {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 3rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  border-radius: 1rem;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  position: absolute;
+  content: "";
+  height: 1.25rem;
+  width: 1.25rem;
+  left: 0.1875rem;
+  bottom: 0.1875rem;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #738ba8 0%, #5b7a9f 100%);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(1.375rem);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Stats Overview */

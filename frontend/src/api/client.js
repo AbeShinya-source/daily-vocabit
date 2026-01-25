@@ -488,6 +488,21 @@ export const authApi = {
       body: JSON.stringify(data),
     })
   },
+
+  /**
+   * 通知設定を更新
+   * @param {boolean} enabled - メール通知の有効/無効
+   */
+  async updateNotificationSettings(enabled) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest('/auth/notification-settings', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ email_notification_enabled: enabled }),
+    })
+  },
 }
 
 /**

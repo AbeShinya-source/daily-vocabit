@@ -215,6 +215,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateNotificationSettings(enabled) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await authApi.updateNotificationSettings(enabled)
+
+      if (response.success) {
+        user.value = {
+          ...user.value,
+          email_notification_enabled: response.data.email_notification_enabled,
+        }
+        return { success: true }
+      } else {
+        error.value = response.message || '通知設定の更新に失敗しました'
+        return { success: false, error: error.value }
+      }
+    } catch (e) {
+      error.value = e.message || '通知設定の更新に失敗しました'
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function initAuth() {
     if (token.value) {
       await fetchUser()
@@ -237,6 +262,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     fetchUser,
     googleLogin,
+    updateNotificationSettings,
     initAuth,
     clearAuth,
   }

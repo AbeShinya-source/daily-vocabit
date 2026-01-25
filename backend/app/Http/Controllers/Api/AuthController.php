@@ -248,7 +248,31 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'avatar' => $user->avatar,
                     'is_admin' => $user->is_admin,
+                    'email_notification_enabled' => $user->email_notification_enabled,
                 ],
+            ]
+        ]);
+    }
+
+    /**
+     * メール通知設定を更新
+     */
+    public function updateNotificationSettings(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email_notification_enabled' => 'required|boolean',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'email_notification_enabled' => $validated['email_notification_enabled'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => '通知設定を更新しました',
+            'data' => [
+                'email_notification_enabled' => $user->email_notification_enabled,
             ]
         ]);
     }

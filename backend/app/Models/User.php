@@ -18,6 +18,7 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'is_admin',
+        'email_notification_enabled',
     ];
 
     protected $hidden = [
@@ -30,6 +31,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_admin' => 'boolean',
+        'email_notification_enabled' => 'boolean',
     ];
 
     /**
