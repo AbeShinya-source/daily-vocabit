@@ -32,44 +32,47 @@
 
     <!-- Dashboard Content -->
     <div v-else class="dashboard-content">
-      <!-- User Profile Card -->
-      <section class="profile-card">
-        <div class="profile-info">
-          <img
-            v-if="auth.user?.avatar"
-            :src="auth.user.avatar"
-            :alt="auth.user.name"
-            class="profile-avatar"
-          />
-          <div v-else class="profile-avatar-placeholder">
-            {{ auth.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
-          </div>
-          <div class="profile-details">
-            <h2 class="profile-name">{{ auth.user?.name }}</h2>
-            <p class="profile-email">{{ auth.user?.email }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Notification Settings -->
-      <section class="settings-card">
-        <h3 class="section-title">通知設定</h3>
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="setting-label">メール通知</span>
-            <span class="setting-description">毎日9時に新しい問題の通知を受け取る</span>
-          </div>
-          <label class="toggle-switch">
-            <input
-              type="checkbox"
-              :checked="auth.user?.email_notification_enabled"
-              @change="toggleNotification"
-              :disabled="isUpdatingNotification"
+      <!-- Profile & Settings Row -->
+      <div class="profile-settings-row">
+        <!-- User Profile Card -->
+        <section class="profile-card">
+          <div class="profile-info">
+            <img
+              v-if="auth.user?.avatar"
+              :src="auth.user.avatar"
+              :alt="auth.user.name"
+              class="profile-avatar"
             />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </section>
+            <div v-else class="profile-avatar-placeholder">
+              {{ auth.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+            </div>
+            <div class="profile-details">
+              <h2 class="profile-name">{{ auth.user?.name }}</h2>
+              <p class="profile-email">{{ auth.user?.email }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Notification Settings -->
+        <section class="settings-card">
+          <h3 class="section-title">通知設定</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">メール通知</span>
+              <span class="setting-description">毎日9時に新しい問題の通知を受け取る</span>
+            </div>
+            <label class="toggle-switch">
+              <input
+                type="checkbox"
+                :checked="auth.user?.email_notification_enabled"
+                @change="toggleNotification"
+                :disabled="isUpdatingNotification"
+              />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </section>
+      </div>
 
       <!-- Stats Overview -->
       <section class="stats-overview">
@@ -835,12 +838,25 @@ function getBadgeIcon(iconName) {
   margin-bottom: 0.75rem;
 }
 
+/* Profile & Settings Row */
+.profile-settings-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .profile-settings-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* Profile Card */
 .profile-card {
   background: white;
   border-radius: 1rem;
   padding: 1.25rem;
-  margin-bottom: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -887,7 +903,6 @@ function getBadgeIcon(iconName) {
   background: white;
   border-radius: 1rem;
   padding: 1.25rem;
-  margin-bottom: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
