@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\GenerationLog;
 use App\Models\Question;
 use App\Models\Vocabulary;
+use App\Services\GeminiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
@@ -187,5 +190,171 @@ class AdminController extends Controller
                 'IDIOM' => Vocabulary::where('type', 'IDIOM')->count(),
             ],
         ]);
+    }
+
+    /**
+     * 問題を手動生成
+     */
+    public function generateQuestions(Request $request, GeminiService $geminiService)
+    {
+        $validator = Validator::make($request->all(), [
+            'difficulty' => 'required|integer|min:1|max:2',
+            'count' => 'required|integer|min:1|max:20',
+            'date' => 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $difficulty = (int) $request->difficulty;
+        $count = (int) $request->count;
+        $date = $request->date;
+
+        // 既存の問題数を確認
+        $existingCount = Question::where('difficulty', $difficulty)
+            ->where('generated_date', $date)
+            ->count();
+
+        // 語彙を選択
+        $vocabularies = $this->selectVocabulariesForGeneration($difficulty, $count);
+
+        if (count($vocabularies) < $count) {
+            return response()->json([
+                'error' => 'データベースに十分な語彙がありません',
+                'available' => count($vocabularies),
+                'requested' => $count,
+            ], 422);
+        }
+
+        // 問題生成
+        $startTime = microtime(true);
+        $result = $geminiService->generateMultipleQuestions($vocabularies);
+        $endTime = microtime(true);
+
+        // データベースに保存
+        $savedCount = 0;
+        $failedCount = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($result['results'] as $item) {
+                if ($item['success']) {
+                    $vocab = collect($vocabularies)->firstWhere('id', $item['vocabulary_id']);
+                    $vocabType = $vocab['type'] ?? 'WORD';
+
+                    Question::create([
+                        'vocabulary_id' => $item['vocabulary_id'],
+                        'type' => $vocabType,
+                        'difficulty' => $difficulty,
+                        'question_text' => $item['question']['question_text'],
+                        'question_translation' => $item['question']['question_translation'],
+                        'choices' => $item['question']['choices'],
+                        'correct_index' => $item['question']['correct_index'],
+                        'explanation' => $item['question']['explanation'],
+                        'generated_date' => $date,
+                        'is_active' => true,
+                        'usage_count' => 0
+                    ]);
+                    $savedCount++;
+                } else {
+                    $failedCount++;
+                }
+            }
+
+            // 生成ログを記録
+            $totalTokens = $result['total_usage']['total_tokens'];
+            $estimatedCost = $this->calculateGenerationCost($result['total_usage']);
+
+            GenerationLog::create([
+                'generated_date' => $date,
+                'type' => 'WORD',
+                'difficulty' => $difficulty,
+                'questions_count' => $savedCount,
+                'ai_model' => 'gemini-1.5-flash',
+                'prompt_tokens' => $result['total_usage']['prompt_tokens'],
+                'completion_tokens' => $result['total_usage']['completion_tokens'],
+                'total_cost' => $estimatedCost,
+                'status' => $failedCount === 0 ? 'SUCCESS' : 'PARTIAL',
+                'error_message' => $failedCount > 0 ? "{$failedCount} 問の生成に失敗しました" : null
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => '問題生成が完了しました',
+                'data' => [
+                    'saved_count' => $savedCount,
+                    'failed_count' => $failedCount,
+                    'processing_time' => round($endTime - $startTime, 2),
+                    'total_tokens' => $totalTokens,
+                    'estimated_cost' => $estimatedCost,
+                    'existing_count' => $existingCount,
+                    'total_count' => $existingCount + $savedCount,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'エラーが発生しました: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 問題生成用に語彙を選択
+     */
+    private function selectVocabulariesForGeneration(int $difficulty, int $count): array
+    {
+        $wordCount = (int) ceil($count / 2);
+        $idiomCount = $count - $wordCount;
+
+        $words = Vocabulary::where('type', 'WORD')
+            ->where('difficulty', $difficulty)
+            ->inRandomOrder()
+            ->limit($wordCount)
+            ->get()
+            ->toArray();
+
+        $idioms = Vocabulary::where('type', 'IDIOM')
+            ->where('difficulty', $difficulty)
+            ->inRandomOrder()
+            ->limit($idiomCount)
+            ->get()
+            ->toArray();
+
+        $vocabularies = array_merge($words, $idioms);
+
+        // 足りない場合は他方から補充
+        $remainingCount = $count - count($vocabularies);
+        if ($remainingCount > 0) {
+            $usedIds = array_column($vocabularies, 'id');
+
+            $additional = Vocabulary::where('difficulty', $difficulty)
+                ->whereNotIn('id', $usedIds)
+                ->inRandomOrder()
+                ->limit($remainingCount)
+                ->get()
+                ->toArray();
+
+            $vocabularies = array_merge($vocabularies, $additional);
+        }
+
+        shuffle($vocabularies);
+
+        return array_slice($vocabularies, 0, $count);
+    }
+
+    /**
+     * Gemini API使用料金を計算
+     */
+    private function calculateGenerationCost(array $usage): float
+    {
+        $inputCost = ($usage['prompt_tokens'] / 1_000_000) * 0.075;
+        $outputCost = ($usage['completion_tokens'] / 1_000_000) * 0.30;
+
+        return $inputCost + $outputCost;
     }
 }

@@ -16,6 +16,19 @@ const isLoading = ref(true)
 const error = ref(null)
 const expandedId = ref(null)
 
+// Generate modal state
+const showGenerateModal = ref(false)
+const isGenerating = ref(false)
+const generateForm = ref({
+  difficulty: 1,
+  count: 10,
+  date: new Date().toISOString().slice(0, 10),
+})
+const generateResult = ref(null)
+const generateError = ref(null)
+const generateProgress = ref(0)
+let progressInterval = null
+
 async function loadDates() {
   try {
     const response = await adminApi.getQuestionDates()
@@ -58,6 +71,65 @@ function getChoiceLetter(index) {
   return String.fromCharCode(65 + index)
 }
 
+function openGenerateModal() {
+  generateForm.value = {
+    difficulty: 1,
+    count: 10,
+    date: new Date().toISOString().slice(0, 10),
+  }
+  generateResult.value = null
+  generateError.value = null
+  showGenerateModal.value = true
+}
+
+function closeGenerateModal() {
+  showGenerateModal.value = false
+}
+
+async function generateQuestions() {
+  isGenerating.value = true
+  generateError.value = null
+  generateResult.value = null
+  generateProgress.value = 0
+
+  // Estimate ~2.5 seconds per question
+  const estimatedTime = generateForm.value.count * 2500
+  const startTime = Date.now()
+
+  // Simulate progress
+  progressInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime
+    const progress = Math.min(95, (elapsed / estimatedTime) * 100)
+    generateProgress.value = Math.round(progress)
+  }, 200)
+
+  try {
+    const response = await adminApi.generateQuestions({
+      difficulty: Number(generateForm.value.difficulty),
+      count: Number(generateForm.value.count),
+      date: generateForm.value.date,
+    })
+
+    clearInterval(progressInterval)
+    generateProgress.value = 100
+
+    if (response.success) {
+      generateResult.value = response.data
+      // Reload dates and questions
+      await loadDates()
+      selectedDate.value = generateForm.value.date
+      await loadQuestions()
+    } else {
+      generateError.value = response.error || '生成に失敗しました'
+    }
+  } catch (e) {
+    clearInterval(progressInterval)
+    generateError.value = e.message || '生成に失敗しました'
+  } finally {
+    isGenerating.value = false
+  }
+}
+
 watch([selectedDate, selectedDifficulty], () => {
   loadQuestions()
 })
@@ -78,6 +150,9 @@ onMounted(() => {
         &larr; 戻る
       </button>
       <h1>問題一覧</h1>
+      <button class="generate-btn" @click="openGenerateModal">
+        + 問題を生成
+      </button>
     </header>
 
     <div class="filters">
@@ -151,6 +226,90 @@ onMounted(() => {
             <span class="label">語彙:</span>
             <span>{{ q.vocabulary.word }} - {{ q.vocabulary.meaning }}</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate Modal -->
+    <div v-if="showGenerateModal" class="modal-overlay" @click.self="closeGenerateModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>問題を生成</h2>
+          <button class="modal-close" @click="closeGenerateModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="generateResult" class="generate-result success">
+            <h3>生成完了</h3>
+            <div class="result-stats">
+              <div class="stat-item">
+                <span class="stat-label">生成成功</span>
+                <span class="stat-value">{{ generateResult.saved_count }}問</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">生成失敗</span>
+                <span class="stat-value">{{ generateResult.failed_count }}問</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">処理時間</span>
+                <span class="stat-value">{{ generateResult.processing_time }}秒</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">合計問題数</span>
+                <span class="stat-value">{{ generateResult.total_count }}問</span>
+              </div>
+            </div>
+            <button class="btn-primary" @click="closeGenerateModal">閉じる</button>
+          </div>
+
+          <form v-else @submit.prevent="generateQuestions">
+            <div class="form-group">
+              <label>日付</label>
+              <input type="date" v-model="generateForm.date" required />
+            </div>
+
+            <div class="form-group">
+              <label>難易度</label>
+              <select v-model="generateForm.difficulty" required>
+                <option :value="1">基礎 (Standard)</option>
+                <option :value="2">上級 (Hard)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>生成数</label>
+              <input
+                type="number"
+                v-model="generateForm.count"
+                min="1"
+                max="20"
+                required
+              />
+              <span class="form-hint">1〜20問</span>
+            </div>
+
+            <div v-if="generateError" class="generate-error">
+              {{ generateError }}
+            </div>
+
+            <div v-if="isGenerating" class="progress-section">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: generateProgress + '%' }"></div>
+              </div>
+              <div class="progress-text">
+                生成中... {{ generateProgress }}%
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" @click="closeGenerateModal" :disabled="isGenerating">
+                キャンセル
+              </button>
+              <button type="submit" class="btn-primary" :disabled="isGenerating">
+                {{ isGenerating ? '生成中...' : '生成する' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -353,5 +512,230 @@ onMounted(() => {
   .filter-group select {
     width: 100%;
   }
+}
+
+/* Generate Button */
+.generate-btn {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #738ba8 0%, #5b7a9f 100%);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.generate-btn:hover {
+  background: linear-gradient(135deg, #5b7a9f 0%, #4a6785 100%);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #64748b;
+}
+
+.modal-body {
+  padding: 1.25rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 0.375rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  font-size: 0.9375rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #738ba8;
+  box-shadow: 0 0 0 3px rgba(115, 139, 168, 0.1);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #738ba8 0%, #5b7a9f 100%);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5b7a9f 0%, #4a6785 100%);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.generate-error {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.progress-section {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  height: 0.5rem;
+  background: #e2e8f0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #738ba8 0%, #5b7a9f 100%);
+  border-radius: 0.25rem;
+  transition: width 0.2s ease;
+}
+
+.progress-text {
+  font-size: 0.8125rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.generate-result {
+  text-align: center;
+}
+
+.generate-result h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 1rem;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
 }
 </style>

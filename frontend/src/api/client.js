@@ -551,6 +551,21 @@ export const adminApi = {
   },
 
   /**
+   * 問題を生成
+   * @param {Object} data - 生成パラメータ { difficulty, count, date }
+   */
+  async generateQuestions(data) {
+    const token = localStorage.getItem('auth_token')
+    return apiRequest('/admin/questions/generate', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
    * 語彙一覧を取得
    * @param {Object} params - クエリパラメータ
    */

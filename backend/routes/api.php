@@ -130,6 +130,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     // 問題管理
     Route::get('/questions', [AdminController::class, 'questions']);
     Route::get('/questions/dates', [AdminController::class, 'questionDates']);
+    Route::post('/questions/generate', [AdminController::class, 'generateQuestions']);
 
     // 語彙管理
     Route::get('/vocabularies', [AdminController::class, 'vocabularies']);
